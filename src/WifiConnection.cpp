@@ -1,5 +1,5 @@
 #include "WifiConnection.h"
-#include <ESP8266WiFi.h>
+#include <LittleFS.h>
 
 
 StringArray::StringArray(DebugLog* log) {

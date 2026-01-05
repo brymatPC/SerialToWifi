@@ -1,13 +1,12 @@
 #ifndef WifiConnection_h
 #define WifiConnection_h
 
-#include <LittleFS.h>
 #include <ESP8266WiFi.h>
 
-#include "utility/Sliceable.h"
-#include "utility/IntervalTimer.h"
-#include "utility/DebugLog.h"
-#include "utility/LedBlink.h"
+#include <utility/Sliceable.h>
+#include <utility/IntervalTimer.h>
+#include <utility/DebugLog.h>
+#include <utility/LedBlink.h>
 
 typedef struct {
   uint16_t m_index[ 32];

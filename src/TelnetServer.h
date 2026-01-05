@@ -3,7 +3,8 @@
 
 #include <ESP8266WiFi.h>
 #include <LittleFS.h>
-#include "DebugLog.h"
+
+#include <utility/DebugLog.h>
 
 class TelnetServer : public Sliceable {
 protected:

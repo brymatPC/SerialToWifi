@@ -12,8 +12,6 @@
 #include <utility/DebugLog.h>
 #include <utility/LedBlink.h>
 
-extern void setLedOnOffMs( uint32_t t, uint32_t u);
-
 class YRShell8266;
 class TelnetServer;
 class TelnetLogServer;

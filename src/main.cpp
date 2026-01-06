@@ -1,6 +1,6 @@
 #include "YRShell8266.h"
 #include "WifiConnection.h"
-#include "HttpServer.h"
+#include "HttpExecServer.h"
 #include "TelnetServer.h"
 
 //  0x01 - setup log
@@ -31,7 +31,7 @@ DebugLog dbg;
 YRShell8266 shell;
 LedBlink onBoardLed;
 WifiConnection wifiConnection(&onBoardLed, &dbg);
-HServer httpServer(&shell);
+HttpExecServer httpServer(&shell);
 TelnetServer telnetServer;
 TelnetLogServer telnetLogServer;
 

@@ -1,4 +1,6 @@
 #include "YRShell8266.h"
+#include "TelnetServer.h"
+#include "WifiConnection.h"
 #include <utility/String.h>
 
 #define INITIAL_LOAD_FILE "/start.yr"
@@ -141,12 +143,10 @@ YRShell8266::~YRShell8266() {
   }
 }
 
-void YRShell8266::init( unsigned httpPort, unsigned telnetPort, WifiConnection* wifiConnection, LedBlink* led, DebugLog* log, unsigned telnetLogPort) {
+void YRShell8266::init( unsigned httpPort, unsigned telnetPort, DebugLog* log, unsigned telnetLogPort) {
   YRShellBase::init();
   m_dictionaryList[ YRSHELL_DICTIONARY_EXTENSION_COMPILED_INDEX] = &compiledExtensionDictionary;
   m_dictionaryList[ YRSHELL_DICTIONARY_EXTENSION_FUNCTION_INDEX] = &dictionaryExtensionFunction;
-  m_wifiConnection = wifiConnection;
-  m_led = led;
   m_log = log;
   if( httpPort != 0) {
     m_httpServer = new HServer( this);

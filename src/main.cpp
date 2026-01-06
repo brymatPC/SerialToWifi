@@ -1,6 +1,7 @@
 #include "YRShell8266.h"
 #include "WifiConnection.h"
 
+
 //  0x01 - setup log
 //  0x02 - errors
 //  0x04 - exec output
@@ -65,7 +66,9 @@ void setup(){
   onBoardLed.setLedPin( LED_PIN); 
   wifiConnection.enable();
 
-  shell.init( 80, 23, &wifiConnection, &onBoardLed, &dbg, 2023);
+  shell.setLedBlink(&onBoardLed);
+  shell.setWifiConnection(&wifiConnection);
+  shell.init( 80, 23, &dbg, 2023);
   dbg.print( __FILE__, __LINE__, 1, "setup_done:");
 }
 

@@ -2,17 +2,15 @@
 #define YRShell8266_h
 
 #include <YRShell.h>
-#include "WifiConnection.h"
 #include "HttpServer.h"
-#include "TelnetServer.h"
 
 #include <ESP8266WiFi.h>
 #include <LittleFS.h>
 
 #include <utility/DebugLog.h>
-#include <utility/LedBlink.h>
 
 class YRShell8266;
+class WifiConnection;
 class TelnetServer;
 class TelnetLogServer;
 
@@ -118,7 +116,12 @@ protected:
 public:
   YRShell8266( );
   virtual ~YRShell8266( );
-  void init( unsigned httpPort, unsigned telnetPort, WifiConnection* wifiConnection, LedBlink* led, DebugLog* log, unsigned debugTelnetPort = 0);
+  void init( unsigned httpPort, unsigned telnetPort, DebugLog* log, unsigned debugTelnetPort = 0);
+
+  // Provide object instances to drive testing, can be nullptr
+  void setLedBlink(LedBlink *led) { m_led = led; }
+  void setWifiConnection(WifiConnection* wifiConnection) { m_wifiConnection = wifiConnection; }
+
   virtual void slice( void);
   void loadFile( const char* fname, bool exec = true);
   void startExec( void);

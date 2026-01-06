@@ -1,4 +1,5 @@
 #include "YRShell8266.h"
+#include <utility/String.h>
 
 #define INITIAL_LOAD_FILE "/start.yr"
 

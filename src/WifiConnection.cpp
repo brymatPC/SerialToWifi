@@ -1,5 +1,6 @@
 #include "WifiConnection.h"
 #include <LittleFS.h>
+#include <utility/String.h>
 
 
 StringArray::StringArray(DebugLog* log) {
@@ -124,7 +125,7 @@ NetworkParameters::NetworkParameters( DebugLog* log) : StringArray( log) {
 
 void NetworkParameters::resetUint32(uint8_t index, uint32_t v ) {
   char buf[ 11];
-  YRShellInterpreter::unsignedToStringX( v, 8, buf);
+  unsignedToStringX( v, 8, buf);
   resetString( index, buf);
 }
 
@@ -372,13 +373,13 @@ void WifiConnection::hostConfig( ) {
   uint32_t gw = 0;
   uint32_t mask = 0;
 
-  if( YRShellInterpreter::stringToUnsignedX( networkParameters.getHostIp( ), &v)) {
+  if( stringToUnsignedX( networkParameters.getHostIp( ), &v)) {
     ip = v;
   }
-  if( YRShellInterpreter::stringToUnsignedX( networkParameters.getHostGateway( ), &v)) {
+  if( stringToUnsignedX( networkParameters.getHostGateway( ), &v)) {
     gw = v;
   }
-  if( YRShellInterpreter::stringToUnsignedX( networkParameters.getHostMask( ), &v)) {
+  if( stringToUnsignedX( networkParameters.getHostMask( ), &v)) {
     mask = v;
   }
   if( !WiFi.softAPConfig( IPAddress(ip), IPAddress(gw) , IPAddress( mask))) {

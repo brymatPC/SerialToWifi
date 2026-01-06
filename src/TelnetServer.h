@@ -5,6 +5,7 @@
 #include <LittleFS.h>
 
 #include <utility/DebugLog.h>
+#include <utility/IntervalTimer.h>
 
 class TelnetServer : public Sliceable {
 protected:

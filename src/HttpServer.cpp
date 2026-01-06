@@ -1,5 +1,5 @@
 #include "HttpServer.h"
-
+#include <utility/String.h>
 
 HttpServer::HttpServer( void) {
   m_server = NULL;
@@ -66,9 +66,9 @@ void HttpServer::clientWrite( const char* P, unsigned len){
   }
 }
 char HttpServer::hexToAscii( const char* h) {
-  char rc = YRShellInterpreter::charToHex( *h++);
+  char rc = charToHex( *h++);
   rc <<= 4;
-  rc += YRShellInterpreter::charToHex( *h);
+  rc += charToHex( *h);
   return rc;
 }
 void HttpServer::sendExec(  uint8_t offset ) {

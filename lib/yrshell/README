@@ -1,0 +1,35 @@
+# YRShell Library
+
+This library is based on work done by ssanci in the repository https://github.com/salsanci/YRShell.  A short summary is duplicated here:
+
+YrShell is an interactive command line shell providing access to the Arduino ARM processor simillar to the way the Linux BASH shell provides access to the OS functionality. YrShell provides scripting capabilities.YrShell allows us to add commands to the YrShell dictionary. The idea is that YrShell allows us to manipulate the Arduino ARM processor (and any installed programs) from the command line.
+
+YrShell is simillar to, but not the same as, FORTH. That is, the YrShell command line works the same as a FORTH command line.  Under the hood its all different, but we don't care, because we never need to look at that part. Find the Leo Brode tutorial HERE:  http://www.forth.org/tutorials.html
+
+# Setup Hardware
+This library has been tested on the ESP8266.
+
+# Setup PC Software
+This library is configured for use with platform.io within vscode.
+
+# YRShell Commands
+
+Commands are added to the YRShell Dictionary in 3 different ways:
+
+1. Built-in commands are contained with the file `utility/YRShellInterpreter.cpp`
+1. Additional default commands are added using a pre-compiled dictionary array in `utility/compile/compiledDictionary.h`
+1. Custom commands can be created during run-time using the `: ` operator
+    * NOTE: These commands are not stored anywhere and will be lost on a power cycle
+
+## Adding to Pre-Compiled Dictionary
+
+Since YRShell provides scripting capabilities, it itself is used to generate the pre-compiled dictionary array.
+
+1. Install and run an example YRShell on the target of your choice
+1. Modify `utility/compile/YRShellInterpreter.yr` as desired
+1. Copy and paste the contents of `utility/compile/YRShellInterpreter.yr` into the YRShell terminal started in step 1
+1. Wait for YRShell to finish processing the input
+1. Copy and paste the full results to `utility/compile/compileOutput.txt`
+    * NOTE: This file is only used for future reference
+1. Copy and paste the dictionary array to `utility/compile/compiledDictionary.h`
+    * Dictionary starts with `static const uint16_t compiledDictionaryData[] = {`

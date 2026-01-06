@@ -1,0 +1,13 @@
+# Serial to WIFI
+
+This project is based on work done by ssanci in the repository https://github.com/salsanci/YRShell.  The primary goals:
+
+1. Provide a mechanism for using YRShell with Platform.io
+1. Provide another example of how YRShell can be used on a project
+1. Provide a potentially useful project for providing TTL level UARTS over WIFI
+
+# Setup Hardware
+This library has been tested on the ESP8266.
+
+# Setup PC Software
+This library is configured for use with platform.io within vscode.

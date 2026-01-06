@@ -38,8 +38,8 @@ TelnetServer::~TelnetServer() {
 }
 
 void TelnetServer::init( unsigned port, CircularQBase<char> *in, CircularQBase<char>* out, DebugLog* log) {
-    m_fromTelnetQ = in; //&shell->getInq();
-    m_toTelnetQ = out; //&shell->getOutq();
+    m_fromTelnetQ = in;
+    m_toTelnetQ = out;
     m_server = new WiFiServer( port);
     m_log = log;
     m_server->begin();

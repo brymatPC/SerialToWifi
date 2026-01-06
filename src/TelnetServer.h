@@ -47,16 +47,19 @@ public:
 };
 
 class TelnetLogServer : public TelnetServer {
+private:
+  bool m_enabled;
 protected:
   CQ1 m_fq;
   CQ2 m_tq;
 public:
-  TelnetLogServer(void) { }
+  TelnetLogServer(void) { m_enabled = false; }
   virtual ~TelnetLogServer() { }
   virtual const char* sliceName( ) { return "TelnetLogServer"; }
   void init( unsigned port);
-  void put( char c ) { m_tq.put( c); }
-  bool spaceAvailable( uint16_t n = 1) { return m_toTelnetQ->spaceAvailable( n); }
+  void enable( bool enable) { m_enabled = enable; }
+  void put( char c ) { if(m_enabled) { m_tq.put( c); } }
+  bool spaceAvailable( uint16_t n = 1) { return m_enabled ? m_toTelnetQ->spaceAvailable( n) : false; }
 };
 
 #endif

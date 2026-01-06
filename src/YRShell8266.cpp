@@ -73,11 +73,8 @@ static FunctionDictionary dictionaryExtensionFunction( yr8266ShellExtensionFunct
 
 CompiledDictionary compiledExtensionDictionary( NULL, 0xFFFF , 0x0000 , YRSHELL_DICTIONARY_EXTENSION_COMPILED);
 
-void saveString( const char* fname, const char* s);
-
 YRShell8266::YRShell8266() {
-  m_httpServer = NULL;
-  m_telnetServer = NULL;
+  m_telnetLogServer = NULL;
   m_fileOpen = false;
   m_initialFileLoaded = false;
   m_initialized = false;
@@ -85,29 +82,13 @@ YRShell8266::YRShell8266() {
 }
 
 YRShell8266::~YRShell8266() {
-  if( m_telnetServer != NULL) {
-    delete m_telnetServer;
-    m_telnetServer = NULL;
-  }
-  if( m_telnetLogServer != NULL) {
-    delete m_telnetLogServer;
-    m_telnetLogServer = NULL;
-  }
 }
 
-void YRShell8266::init( unsigned telnetPort, DebugLog* log, unsigned telnetLogPort) {
+void YRShell8266::init( DebugLog* log) {
   YRShellBase::init();
   m_dictionaryList[ YRSHELL_DICTIONARY_EXTENSION_COMPILED_INDEX] = &compiledExtensionDictionary;
   m_dictionaryList[ YRSHELL_DICTIONARY_EXTENSION_FUNCTION_INDEX] = &dictionaryExtensionFunction;
   m_log = log;
-  if( telnetPort != 0) {
-    m_telnetServer = new TelnetServer;
-    m_telnetServer->init( telnetPort, &getInq(), &getOutq(), log);
-  }
-  if( telnetLogPort != 0) {
-    m_telnetLogServer = new TelnetLogServer;
-    m_telnetLogServer->init( telnetLogPort);
-  }
   m_exec = false;
   m_initialized = true;
 }
@@ -280,7 +261,10 @@ void YRShell8266::executeFunction( uint16_t n) {
               pushParameterStack(  WiFi.status() == WL_CONNECTED);
               break;
           case SE_CC_setTelnetLogEnable:
-              m_telnetLogEnable = popParameterStack();
+              t1 = popParameterStack();
+              if( m_telnetLogServer) {
+                m_telnetLogServer->enable(t1);
+              }
               break;
 
           case SE_CC_getHostName:
@@ -487,20 +471,6 @@ void YRShell8266::executeFunction( uint16_t n) {
               break;
       }
   }
-}
-
-void YRShell8266::telnetLogPut( char c) {
-  if( m_telnetLogServer && m_telnetLogEnable) {
-    m_telnetLogServer->put( c); 
-  }
-}
-
-bool YRShell8266::telnetLogSpaceAvaliable( uint16_t n) {
-  bool rc = true;
-  if( m_telnetLogServer && m_telnetLogEnable) {
-    rc = m_telnetLogServer->spaceAvailable( n); 
-  }
-  return rc;
 }
 
 void YRShell8266::outUInt8( int8_t v) {

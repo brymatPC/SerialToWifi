@@ -1,6 +1,7 @@
 #include "YRShell8266.h"
 #include "WifiConnection.h"
 #include "HttpServer.h"
+#include "TelnetServer.h"
 
 //  0x01 - setup log
 //  0x02 - errors
@@ -31,8 +32,10 @@ YRShell8266 shell;
 LedBlink onBoardLed;
 WifiConnection wifiConnection(&onBoardLed, &dbg);
 HServer httpServer(&shell);
+TelnetServer telnetServer;
+TelnetLogServer telnetLogServer;
 
-void setup(){
+ void setup(){
   unsigned httpPort = 80;
   unsigned telnetPort = 23;
   unsigned telnetLogPort = 2023;
@@ -73,21 +76,27 @@ void setup(){
   if( httpPort != 0) {
     httpServer.init( httpPort, &dbg, &onBoardLed);
   }
+  if( telnetPort != 0) {
+    telnetServer.init( telnetPort, &shell.getInq(), &shell.getOutq(), &dbg);
+  }
+  if( telnetLogPort != 0) {
+    telnetLogServer.init( telnetLogPort);
+  }
 
   shell.setLedBlink(&onBoardLed);
   shell.setWifiConnection(&wifiConnection);
-  shell.setHttpServer(&httpServer);
-  shell.init( 23, &dbg, 2023);
+  shell.setTelnetLogServer(&telnetLogServer);
+  shell.init( &dbg);
   dbg.print( __FILE__, __LINE__, 1, "setup_done:");
 }
 
 void loop() {
   Sliceable::sliceAll( );
-  if( dbg.valueAvailable() && shell.telnetLogSpaceAvaliable( 32) && Serial.availableForWrite() > 32) {
+  if( dbg.valueAvailable() && telnetLogServer.spaceAvailable( 32) && Serial.availableForWrite() > 32) {
     char c;
     for( uint8_t i = 0; i < 32 && dbg.valueAvailable(); i++) {
       c = dbg.get();
-      shell.telnetLogPut( c);
+      telnetLogServer.put( c);
       Serial.print( c );
     }
   }

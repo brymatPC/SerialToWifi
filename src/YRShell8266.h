@@ -11,8 +11,6 @@
 class YRShell8266;
 class LedBlink;
 class WifiConnection;
-class HServer;
-class TelnetServer;
 class TelnetLogServer;
 
 typedef enum {
@@ -77,12 +75,10 @@ typedef enum {
 
 class YRShell8266 : public virtual YRShellBase<2048, 128, 128, 16, 16, 16, 8, 256, 512, 256, 512, 128> {
 protected:
-  bool m_exec, m_initialized, m_telnetLogEnable;
+  bool m_exec, m_initialized;
   char m_auxBuf[ 128];
   uint8_t m_auxBufIndex;
 
-  HServer* m_httpServer;
-  TelnetServer* m_telnetServer;
   TelnetLogServer* m_telnetLogServer;
   LedBlink* m_led;
   WifiConnection* m_wifiConnection;
@@ -98,12 +94,12 @@ protected:
 public:
   YRShell8266( );
   virtual ~YRShell8266( );
-  void init( unsigned telnetPort, DebugLog* log, unsigned debugTelnetPort = 0);
+  void init( DebugLog* log);
 
   // Provide object instances to drive testing, can be nullptr
   void setLedBlink(LedBlink *led) { m_led = led; }
   void setWifiConnection(WifiConnection* wifiConnection) { m_wifiConnection = wifiConnection; }
-  void setHttpServer(HServer* httpServer) { m_httpServer = httpServer; }
+  void setTelnetLogServer(TelnetLogServer* telnetLogServer) { m_telnetLogServer = telnetLogServer; }
 
   virtual void slice( void);
   void loadFile( const char* fname, bool exec = true);
@@ -111,8 +107,6 @@ public:
   void endExec( void);
   void execString( const char* p);
   bool isExec( void) { return m_exec; }
-  void telnetLogPut( char c);
-  bool telnetLogSpaceAvaliable( uint16_t n = 1);
 };
 
 #endif

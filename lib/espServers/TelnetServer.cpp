@@ -1,9 +1,11 @@
 #include "TelnetServer.h"
 
+#include <Wifi.h>
 #include <WiFiServer.h>
 #include <WiFiClient.h>
 
 typedef enum {
+  STATE_STARTUP   = 10,
   STATE_IDLE      = 0,
   STATE_CONNECTED = 1,
   STATE_RECEIVE   = 2,
@@ -14,9 +16,7 @@ typedef enum {
 void TelnetLogServer::init( unsigned port) {
     m_fromTelnetQ = &m_fq;
     m_toTelnetQ = &m_tq;
-    m_server = new WiFiServer( port);
-    m_server->begin();
-    m_client = new WiFiClient();
+    m_port = port;
     m_timer.setInterval( 10);
 }
 
@@ -28,7 +28,7 @@ TelnetServer::TelnetServer() {
   m_client = NULL;
   m_log = NULL;
   m_data0 = m_data1 = 0;
-  m_state = STATE_IDLE;
+  m_state = STATE_STARTUP;
   m_lastCharWasNull =  m_flipFlop = m_lastConnected =  false;
 }
 
@@ -44,6 +44,7 @@ TelnetServer::~TelnetServer() {
   m_fromTelnetQ = NULL;
   m_toTelnetQ = NULL;
   m_log = NULL;
+  m_state = STATE_STARTUP;
   m_server = NULL;
   m_client = NULL;
 }
@@ -51,10 +52,8 @@ TelnetServer::~TelnetServer() {
 void TelnetServer::init( unsigned port, CircularQBase<char> *in, CircularQBase<char>* out, DebugLog* log) {
     m_fromTelnetQ = in;
     m_toTelnetQ = out;
-    m_server = new WiFiServer( port);
+    m_port = port;
     m_log = log;
-    m_server->begin();
-    m_client = new WiFiClient();
     m_timer.setInterval( 10);
 }
 
@@ -79,6 +78,15 @@ void TelnetServer::slice() {
       changeState( STATE_IDLE);
     } else {
       switch( m_state) {
+        case STATE_STARTUP:
+          // BAM - 20260107 - Need to wait for WiFi to be initialized before creating a server or client
+          if(WiFi.getMode() != WIFI_MODE_NULL) {
+            m_server = new WiFiServer(m_port);
+            m_server->begin();
+            m_client = new WiFiClient();
+            changeState( STATE_IDLE);
+          }
+        break;
         case STATE_IDLE:
           *m_client = m_server->accept();
           if( *m_client) {
@@ -117,7 +125,8 @@ void TelnetServer::slice() {
             if( m_toTelnetQ) {
               const char* p = m_toTelnetQ->getLinearReadBuffer();
               size_t len = m_toTelnetQ->getLinearReadBufferSize();
-              if( len > 0 && m_client->availableForWrite() >= (int) len) {
+              //if( len > 0 && m_client->availableForWrite() >= (int) len) {
+              if( len > 0) {
                 size_t bw = m_client->write((uint8_t*) p , len );
                 if( bw > 0) {
                   m_toTelnetQ->drop( bw);

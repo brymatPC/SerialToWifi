@@ -33,13 +33,13 @@ YRShell8266 shell;
 // WifiConnection wifiConnection(&onBoardLed, &dbg);
 WifiConnection wifiConnection(nullptr, &dbg);
 HttpExecServer httpServer;
-//TelnetServer telnetServer;
-// TelnetLogServer telnetLogServer;
+TelnetServer telnetServer;
+TelnetLogServer telnetLogServer;
 
 void setup(){
   unsigned httpPort = 80;
   unsigned telnetPort = 23;
-  unsigned telnetLogPort = 0;
+  unsigned telnetLogPort = 2023;
   dbg.setMask( LOG_MASK);
 
   Serial.begin( 500000);
@@ -81,29 +81,29 @@ void setup(){
     httpServer.setYRShell(&shell);
     //httpServer.setLedBlink(&onBoardLed);
   }
-  // if( telnetPort != 0) {
-  //   telnetServer.init( telnetPort, &shell.getInq(), &shell.getOutq(), &dbg);
-  // }
-  // if( telnetLogPort != 0) {
-  //   telnetLogServer.init( telnetLogPort);
-  // }
+  if( telnetPort != 0) {
+    telnetServer.init( telnetPort, &shell.getInq(), &shell.getOutq(), &dbg);
+  }
+  if( telnetLogPort != 0) {
+    telnetLogServer.init( telnetLogPort);
+  }
 
   // shell.setLedBlink(&onBoardLed);
   shell.setWifiConnection(&wifiConnection);
-  // //shell.setTelnetLogServer(&telnetLogServer);
+  shell.setTelnetLogServer(&telnetLogServer);
   shell.init( &dbg);
   dbg.print( __FILE__, __LINE__, 1, "setup_done:");
 }
 
 void loop() {
   Sliceable::sliceAll( );
-  //if( dbg.valueAvailable() && telnetLogServer.spaceAvailable( 32) && Serial.availableForWrite() > 32) {
-  if( dbg.valueAvailable() && Serial.availableForWrite() > 32) {
+  if( dbg.valueAvailable() && telnetLogServer.spaceAvailable( 32) && Serial.availableForWrite() > 32) {
+  //if( dbg.valueAvailable() && Serial.availableForWrite() > 32) {
   //if( dbg.valueAvailable()) {
     char c;
     for( uint8_t i = 0; i < 32 && dbg.valueAvailable(); i++) {
       c = dbg.get();
-      //telnetLogServer.put( c);
+      telnetLogServer.put( c);
       Serial.print( c );
     }
   }

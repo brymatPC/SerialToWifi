@@ -10,6 +10,7 @@ class WiFiClient;
 class TelnetServer : public Sliceable {
 protected:
 
+  unsigned m_port;
   WiFiServer* m_server;
   WiFiClient* m_client;
 

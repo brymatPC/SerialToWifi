@@ -3,6 +3,23 @@
 #include <utility/LedBlink.h>
 #include <utility/String.h>
 
+typedef enum {
+  STATE_RESET            = 0,
+  STATE_IDLE            = 1,
+  STATE_CONNECTING      = 20,
+  STATE_CONNECTED       = 21,
+  STATE_DISCONNECTING   = 3,
+  STATE_PROCESS_REQUEST = 2,
+  STATE_LOG_DISCONNECT  = 4,
+  STATE_DISCONNECT_WAIT = 5,
+  STATE_SEND_FILE       = 6,
+  STATE_PROCESS_EXEC    = 7,
+  STATE_FINISH_EXEC     = 8,
+  STATE_PROCESS_CMD     = 9,
+  STATE_FINISH_CMD      = 10,
+
+} httpServerStates_t;
+
 HttpServer::HttpServer( void) {
   m_server = NULL;
   m_client = NULL;
@@ -35,7 +52,7 @@ void HttpServer::init(unsigned port, DebugLog* log, LedBlink* led) {
     m_led = led;
     m_server->begin();
     m_client = NULL;
-    m_state = 0;
+    m_state = STATE_RESET;
     m_urlIndex = 0;
 }
 unsigned HttpServer::readFile( char* P, unsigned len) {
@@ -100,7 +117,7 @@ void HttpServer::sendFile( const char* type) {
     clientWrite("\r\nCache-Control: max-age=3600\r\n\r\n");
     m_responseCode = 200;
   }
-  changeState(6);
+  changeState(STATE_SEND_FILE);
 }
 
 void HttpServer::send404(  ) {
@@ -111,7 +128,7 @@ void HttpServer::send404(  ) {
     m_responseCode = 404;
     clientWrite("HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nCache-Control: no-cache\r\n\r\n<!DOCTYPE HTML>\r\n<html><head><title>404 Error</title></head><body><h1>404 Error</h1></body></html>");
   }
-  changeState( 3);
+  changeState( STATE_DISCONNECTING);
 }
 
 void HttpServer::changeState( uint8_t newState) {
@@ -125,28 +142,28 @@ void HttpServer::slice() {
   uint32_t start = HW_getMicros();
   uint8_t startState = m_state;
   switch( m_state) {
-    case 0:
+    case STATE_RESET:
       m_client = new WiFiClient;
-      changeState( 1);
+      changeState( STATE_IDLE);
       m_responseCode = 0;
       m_urlIndex = 0;
       m_url[ 0] = '\0';
     break;
-    case 1:
+    case STATE_IDLE:
       *m_client = m_server->accept();
       if( *m_client) {
         m_timer.setInterval( 100);
         if( m_log != NULL) {
           m_log->print( __FILE__, __LINE__, 0x020000, "HttpServer_slice_Connected:");
         }
-        changeState( 20);
+        changeState( STATE_CONNECTING);
         if( m_led) {
           m_led->push();
           m_led->blink( 50);
         }
       }
     break;
-    case 2:
+    case STATE_PROCESS_REQUEST:
     {
       m_timer.setInterval( 20000);
       if( m_log != NULL) {
@@ -169,13 +186,13 @@ void HttpServer::slice() {
           strcpy( m_url, "/index.html");
         }
         if( strlen( m_url) <  4) {
-          changeState( 3);
+          changeState( STATE_DISCONNECTING);
         } else if( !strncmp( m_url, "/exec/", 6)) {
           sendExec( 6);
-          changeState( 7);
+          changeState( STATE_PROCESS_EXEC);
         } else if( !strncmp( m_url, "/cmd/", 5)) {
           sendExec( 5);
-          changeState( 9);
+          changeState( STATE_PROCESS_CMD);
         } else {
           const char* suffix = m_url + strlen( m_url);
           while( suffix > m_url && *suffix != '.') {
@@ -200,9 +217,9 @@ void HttpServer::slice() {
           }
         }
       }
-     }
+    }
     break;
-    case 3:
+    case STATE_DISCONNECTING:
       if( m_client != NULL) {
         delete m_client;
         m_client = NULL;
@@ -211,9 +228,9 @@ void HttpServer::slice() {
         m_log->print( __FILE__, __LINE__, 0x020000, "HttpServer_slice_Disconnected:");
       }
       m_timer.setInterval( 1);
-      changeState( 4);
+      changeState( STATE_LOG_DISCONNECT);
     break;
-    case 4:
+    case STATE_LOG_DISCONNECT:
       if( m_log !=  NULL) {
         uint32_t et = HW_getMicros() - m_requestStart;
         et = (et + 500)/1000;
@@ -222,15 +239,15 @@ void HttpServer::slice() {
           m_led->pop();
         }
       }
-      changeState( 5);
+      changeState( STATE_DISCONNECT_WAIT);
     break;
-    case 5:
-      changeState( 0);
+    case STATE_DISCONNECT_WAIT:
+      changeState( STATE_RESET);
     break;
-    case 6:
+    case STATE_SEND_FILE:
       if( m_timer.hasIntervalElapsed()) {
         m_sendFile.close();
-        changeState( 3);
+        changeState( STATE_DISCONNECTING);
       } else {
         if( m_client != NULL && m_client->availableForWrite() >= (int) sizeof(m_buf)) {
           size_t br = readFile( m_buf, sizeof(m_buf)); 
@@ -238,52 +255,52 @@ void HttpServer::slice() {
             clientWrite( m_buf, br);
           } else {
             m_sendFile.close();
-            changeState( 3);
+            changeState( STATE_DISCONNECTING);
           }
-        }    
+        }
       }
     break;
 
-    case 7:
+    case STATE_PROCESS_EXEC:
       m_responseCode = 200;
       clientWrite( "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nCache-Control: no-cache\r\n\r\n");
       m_timer.setInterval( 10000);
-      changeState( 8);
+      changeState( STATE_FINISH_EXEC);
     break;
-    case 8:
+    case STATE_FINISH_EXEC:
       if( sendExecReply() || m_timer.hasIntervalElapsed()) {
         endExec();
-        changeState( 3);
+        changeState( STATE_DISCONNECTING);
       }
     break;
-    case 9:
+    case STATE_PROCESS_CMD:
       m_responseCode = 200;
       clientWrite( "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nAccess-Control-Allow-Origin: *\r\nCache-Control: no-cache\r\n\r\n<!DOCTYPE HTML>\r\n<html><head><title>Cmd</title></head><body><pre>\r\n");
       m_timer.setInterval( 10000);
-      changeState( 10);
+      changeState( STATE_FINISH_CMD);
     break;
-    case 10:
+    case STATE_FINISH_CMD:
       if( sendExecReply() || m_timer.hasIntervalElapsed()) {
         clientWrite( "\r\n</pre></body></html>");
         endExec();
-        changeState( 3);
+        changeState( STATE_DISCONNECTING);
       }
     break;
 
-    case 20:
+    case STATE_CONNECTING:
       m_requestStart = HW_getMicros();
-      changeState( 21);
+      changeState( STATE_CONNECTED);
     break;
-    case 21:
+    case STATE_CONNECTED:
       if( m_client == NULL) {
         m_responseCode = 1;
-        changeState( 3);
+        changeState( STATE_DISCONNECTING);
       } else if( m_timer.hasIntervalElapsed( )) {
         m_responseCode = 2;
-        changeState( 3);        
+        changeState( STATE_DISCONNECTING);
       } else if( m_urlIndex >= (sizeof(m_url) - 1) ) {
         m_responseCode = 3;
-        changeState( 3);
+        changeState( STATE_DISCONNECTING);
       } else {
         int nb = clientRead( &m_url[ m_urlIndex], sizeof(m_url) - m_urlIndex -1);
         if( nb > 0) {
@@ -295,9 +312,9 @@ void HttpServer::slice() {
               m_url[ i] = '\0';
               m_client->flush();
               if( strlen( m_url) < 5 ) {
-                changeState( 3);
+                changeState( STATE_DISCONNECTING);
               } else {
-                changeState( 2);
+                changeState( STATE_PROCESS_REQUEST);
               }
               flag = false;
             }

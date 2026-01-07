@@ -1,11 +1,11 @@
 #ifndef TelnetServer_h
 #define TelnetServer_h
 
-#include <ESP8266WiFi.h>
-#include <LittleFS.h>
-
 #include <utility/DebugLog.h>
 #include <utility/IntervalTimer.h>
+
+class WiFiServer;
+class WiFiClient;
 
 class TelnetServer : public Sliceable {
 protected:

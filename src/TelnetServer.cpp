@@ -1,5 +1,16 @@
 #include "TelnetServer.h"
 
+#include <WiFiServer.h>
+#include <WiFiClient.h>
+
+typedef enum {
+  STATE_IDLE      = 0,
+  STATE_CONNECTED = 1,
+  STATE_RECEIVE   = 2,
+  STATE_CONVERT   = 3,
+
+} telnetServerStates_t;
+
 void TelnetLogServer::init( unsigned port) {
     m_fromTelnetQ = &m_fq;
     m_toTelnetQ = &m_tq;
@@ -17,7 +28,7 @@ TelnetServer::TelnetServer() {
   m_client = NULL;
   m_log = NULL;
   m_data0 = m_data1 = 0;
-  m_state = 0;
+  m_state = STATE_IDLE;
   m_lastCharWasNull =  m_flipFlop = m_lastConnected =  false;
 }
 
@@ -65,21 +76,21 @@ void TelnetServer::slice() {
         m_log->print( __FILE__, __LINE__, 0x0200, "TelnetServer_client_disconnected:");
       }
       m_lastConnected = false;
-      changeState( 0);
+      changeState( STATE_IDLE);
     } else {
       switch( m_state) {
-        case 0:
+        case STATE_IDLE:
           *m_client = m_server->accept();
           if( *m_client) {
             m_lastConnected = true;
             if( m_log != NULL) {
               m_log->print( __FILE__, __LINE__, 0x0200, "TelnetServer_client_connected:");
             }
-            changeState( 1);
+            changeState( STATE_CONNECTED);
           }
         break;
         
-        case 1:
+        case STATE_CONNECTED:
           if( m_flipFlop) {
             m_flipFlop = false;
             if( m_fromTelnetQ) {
@@ -97,7 +108,7 @@ void TelnetServer::slice() {
                   }
                 } else {
                   m_data0 = 0xFF;
-                  changeState( 2);
+                  changeState( STATE_RECEIVE);
                 }
               }
             }
@@ -116,20 +127,20 @@ void TelnetServer::slice() {
           }
         break;
         
-        case 2:
+        case STATE_RECEIVE:
           if( m_client->available() && m_fromTelnetQ->spaceAvailable()) {
             data = m_client->read();
             if( data == 0xFF) {
               m_fromTelnetQ->put( data);
-              changeState( 1);
+              changeState( STATE_CONNECTED);
             } else {
               m_data1 = data;
-              changeState( 3);
+              changeState( STATE_CONVERT);
             }
           }
         break;
         
-        case 3:
+        case STATE_CONVERT:
           if( m_client->available() && m_fromTelnetQ->spaceAvailable()) {
             data = m_client->read();
             if( m_log != NULL) {
@@ -157,13 +168,13 @@ void TelnetServer::slice() {
               }
               m_data0 = m_data1 = 0;
             }
-            changeState( 1);
+            changeState( STATE_CONNECTED);
           }
         break;
       }
     }
-    unsigned et =  HW_getMicros() - start;
 
+    unsigned et =  HW_getMicros() - start;
     if(  m_log != NULL && et > 900) {
       m_log->print( __FILE__, __LINE__, 0x0100, startState, m_state, et, "TelnetServer_slice: startState, m_state, time");
     }

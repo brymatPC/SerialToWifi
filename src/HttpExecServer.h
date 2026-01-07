@@ -19,9 +19,10 @@ protected:
   virtual bool sendExecReply( void);
 
 public:
-  HttpExecServer( YRShellExec* s) { m_shell = s; }
+  HttpExecServer( ) { m_shell = nullptr; }
   virtual ~HttpExecServer() {}
   virtual const char* sliceName( ) { return "HttpExecServer"; }
+  void setYRShell( YRShellExec* s) { m_shell = s; }
 };
 
 #endif

@@ -4,20 +4,26 @@
 #include <utility/DebugLog.h>
 
 void HttpExecServer::exec( const char *p) {
-  m_shell->execString( p);
+  if( m_shell) {
+    m_shell->execString( p);
+  }
   m_auxBufIndex = 0;
 }
 
 void HttpExecServer::startExec( ) {
-  m_shell->startExec();
+  if( m_shell) {
+    m_shell->startExec();
+  }
 }
 void HttpExecServer::endExec( ) {
-  m_shell->endExec();
+  if( m_shell) {
+    m_shell->endExec();
+  }
 }
 
 bool HttpExecServer::sendExecReply( void) {
   bool rc = true;
-  if( m_shell->isAuxQueueInUse() && m_shell->isExec() ) {
+  if( m_shell && m_shell->isAuxQueueInUse() && m_shell->isExec() ) {
     rc = false;
     CircularQBase<char>& q = m_shell->getAuxOutq();
     while( q.valueAvailable()) {

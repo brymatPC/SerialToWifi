@@ -46,7 +46,8 @@ public:
   HttpServer(void);
   virtual ~HttpServer( );
   virtual const char* sliceName( ) { return "HttpServer"; }
-  virtual void init( unsigned port, DebugLog* log = NULL, LedBlink* led = NULL);
+  virtual void init( unsigned port, DebugLog* log = NULL);
+  void setLedBlink(LedBlink *led) { m_led = led; }
   virtual void slice( void);
   static char hexToAscii( const char* h);
 };

@@ -46,10 +46,9 @@ HttpServer::~HttpServer( void) {
   m_urlIndex = 0;
 }
 
-void HttpServer::init(unsigned port, DebugLog* log, LedBlink* led) {
+void HttpServer::init(unsigned port, DebugLog* log) {
     m_server = new WiFiServer(port);
     m_log = log;
-    m_led = led;
     m_server->begin();
     m_client = NULL;
     m_state = STATE_RESET;

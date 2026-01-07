@@ -31,7 +31,7 @@ DebugLog dbg;
 YRShell8266 shell;
 LedBlink onBoardLed;
 WifiConnection wifiConnection(&onBoardLed, &dbg);
-HttpExecServer httpServer(&shell);
+HttpExecServer httpServer;
 TelnetServer telnetServer;
 TelnetLogServer telnetLogServer;
 
@@ -74,7 +74,9 @@ TelnetLogServer telnetLogServer;
   wifiConnection.enable();
 
   if( httpPort != 0) {
-    httpServer.init( httpPort, &dbg, &onBoardLed);
+    httpServer.init( httpPort, &dbg);
+    httpServer.setYRShell(&shell);
+    //httpServer.setLedBlink(&onBoardLed);
   }
   if( telnetPort != 0) {
     telnetServer.init( telnetPort, &shell.getInq(), &shell.getOutq(), &dbg);

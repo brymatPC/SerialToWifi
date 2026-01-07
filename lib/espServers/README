@@ -1,0 +1,17 @@
+# espServers Library
+
+This library is based on work done by ssanci in the repository https://github.com/salsanci/YRShell.
+
+The library depends on similar work done by ssanci called YRShell.
+
+It provides 4 classes:
+* WifiConnection - Creates an AP, and will attempt to connect to configured Networks automatically
+* TelnetServer - A simple telnet protocol
+* HttpServer - A simple http server
+* HttpExecServer - An extension of HttpServer that provides an means to interact with YRShell via Http commands
+
+# Setup Hardware
+This library has been tested on the ESP8266.
+
+# Setup PC Software
+This library is configured for use with platform.io within vscode.

@@ -1,0 +1,28 @@
+{
+  "name": "espServers",
+  "version": "0.9.0",
+  "keywords": "ESP8266, ESP32",
+  "description": "A collection of Server classes for the ESP platform",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/brymatpc/yrshell"
+  },
+  "authors":
+  [
+    {
+        "name": "Sal",
+        "email": "ssanci",
+        "maintainer": false
+    }
+  ],
+  "dependencies": [
+    {
+      "name": "yrshell",
+      "version": "0.9.0"
+    }
+  ],
+  "frameworks": "arduino",
+  "platforms": "espressif8266, espressif32",
+  "headers": "WifiConnection.h"
+}

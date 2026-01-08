@@ -9,5 +9,18 @@ This project is based on work done by ssanci in the repository https://github.co
 # Setup Hardware
 This library has been tested on the ESP8266.
 
+## ESP8266 Defines
+* `-DESP8266`
+* `-DARDUINO_ARCH_ESP8266`
+* `-DARDUINO_ESP8266_ESP12`
+* `-DF_CPU=80000000L`
+
+## ESP32 Defines
+* `-DESP32`
+* `-DARDUINO_ARCH_ESP32`
+* `-DARDUINO_LILYGO_T_DISPLAY_S3`
+* `-DF_CPU=240000000L`
+* `-DARDUINO_USB_CDC_ON_BOOT=1`
+
 # Setup PC Software
 This library is configured for use with platform.io within vscode.

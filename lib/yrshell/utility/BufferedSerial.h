@@ -15,6 +15,9 @@
 class BufferedSerial : public Sliceable {
 protected:
   HardwareSerial *m_hs; /**< Pointer to the HardwareSerial object */
+#ifdef ESP32
+  HWCDC *m_hwcdc;
+#endif
   CircularQBase<char>* m_nextQ; /**< Pointer to the queue which will receive data from the HardwareSerial object */
   CircularQBase<char>* m_previousQ; /**< Pointer to the queue which will supply data to the HardwareSerial object */
   
@@ -26,6 +29,9 @@ public:
 
  */
   BufferedSerial( HardwareSerial* hs);
+#ifdef ESP32
+  BufferedSerial( HWCDC* hwcdc);
+#endif
 /** \brief init - sets up the queues
 
  Sets up the queues. A null value is permissible to indicate there is no queue

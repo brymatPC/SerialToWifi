@@ -23,7 +23,7 @@
 
 // 0x80000000 - YRShellInterpreter debug
 
-#define LOG_MASK 0xFFFFFFFF
+#define LOG_MASK 0x80331303
 
 #define LED_PIN 16
 
@@ -50,7 +50,12 @@ void setup(){
   unsigned telnetLogPort = 2023;
   dbg.setMask( LOG_MASK);
 
-  Serial.begin( 500000);
+#ifdef ESP8266
+  BSerial.begin( 500000);
+#else
+  // BAM - 20260108 - ESP32 uses a USB interface and doesn't support different baud rates
+  BSerial.begin( 115200);
+#endif
 
 #ifdef ESP8266
   analogWriteFreq( 100);
@@ -87,7 +92,7 @@ void setup(){
   if( httpPort != 0) {
     httpServer.init( httpPort, &dbg);
     httpServer.setYRShell(&shell);
-    httpServer.setLedBlink(&onBoardLed);
+    //httpServer.setLedBlink(&onBoardLed);
   }
   if( telnetPort != 0) {
     telnetServer.init( telnetPort, &shell.getInq(), &shell.getOutq(), &dbg);
@@ -105,14 +110,18 @@ void setup(){
 
 void loop() {
   Sliceable::sliceAll( );
-  if( dbg.valueAvailable() && telnetLogServer.spaceAvailable( 32) && Serial.availableForWrite() > 32) {
-  //if( dbg.valueAvailable() && Serial.availableForWrite() > 32) {
-  //if( dbg.valueAvailable()) {
+  bool telnetSpaceAvailable = telnetLogServer.spaceAvailable( 32);
+  bool serialSpaceAvailable = (Serial.availableForWrite() > 32);
+  if( dbg.valueAvailable() && (telnetSpaceAvailable || serialSpaceAvailable)) {
     char c;
     for( uint8_t i = 0; i < 32 && dbg.valueAvailable(); i++) {
       c = dbg.get();
-      telnetLogServer.put( c);
-      Serial.print( c );
+      if(telnetSpaceAvailable) {
+        telnetLogServer.put( c);
+      }
+      if(serialSpaceAvailable) {
+        Serial.print( c );
+      }
     }
   }
 }

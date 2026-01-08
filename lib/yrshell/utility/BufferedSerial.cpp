@@ -2,8 +2,15 @@
 #include "YRShellInterpreter.h"
 #ifdef PLATFORM_ARDUINO
 BufferedSerial::BufferedSerial( HardwareSerial* hs) {
-	m_hs = hs; 
+	m_hs = hs;
+	m_hwcdc = nullptr;
 }
+#ifdef ESP32
+BufferedSerial::BufferedSerial( HWCDC* hwcdc) {
+	m_hs = nullptr;
+	m_hwcdc = hwcdc; 
+}
+#endif
 void BufferedSerial::init(  CircularQBase<char>& nq, CircularQBase<char>& pq) {
 	m_nextQ = &nq;
 	m_previousQ = &pq;
@@ -26,21 +33,30 @@ void BufferedSerial::slice( void) {
 	}
 }
 void BufferedSerial::begin( uint32_t baud) {
-	m_hs->begin( baud);
+	if(m_hs) {
+		m_hs->begin( baud);
+	} else if(m_hwcdc) {
+		m_hwcdc->begin( baud);
+	}
 }
 void BufferedSerial::end( void) {
-	m_hs->end( );
+	if(m_hs) {
+		m_hs->end( );
+	} else if(m_hwcdc) {
+		m_hwcdc->end( );
+	}
 }
 void BufferedSerial::setBaud( uint32_t baud) {
-	m_hs->end();
-	m_hs->begin( baud);
+	if(m_hs) {
+		m_hs->end( );
+		m_hs->begin( baud);
+	} else if(m_hwcdc) {
+		m_hwcdc->end( );
+		m_hwcdc->begin( baud);
+	}
 }
 
-#ifdef ESP32
-BufferedSerial BSerial( &Serial0);
-#else
 BufferedSerial BSerial( &Serial);
-#endif
 #ifdef ENABLE_SERIAL1
 BufferedSerial BSerial1( &Serial1);  
 #endif

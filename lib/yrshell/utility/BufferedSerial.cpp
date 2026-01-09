@@ -18,7 +18,11 @@ void BufferedSerial::slice( void) {
 	int c;
 	if( m_nextQ != NULL) {
 		while( m_nextQ->spaceAvailable()) {
+#ifdef ESP32
+			c = m_hwcdc->read();
+#else
 			c = m_hs->read();
+#endif
 			if( c == -1) {
 				break;
 			}
@@ -26,9 +30,15 @@ void BufferedSerial::slice( void) {
 		}
 	}	
 	if( m_previousQ != NULL) {
+#ifdef ESP32
+		while( m_previousQ->valueAvailable() && m_hwcdc->availableForWrite() > 0) {
+			m_hwcdc->write( m_previousQ->get());
+		}
+#else
 		while( m_previousQ->valueAvailable() && m_hs->availableForWrite() > 0) {
 			m_hs->write( m_previousQ->get());
 		}
+#endif
 	}
 }
 #ifdef ESP32

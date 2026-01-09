@@ -78,7 +78,7 @@ void TelnetServer::slice() {
     uint8_t startState = m_state;
     uint8_t data;
 
-    if( m_lastConnected && !m_client->connected()) {
+    if( m_lastConnected && m_client && !m_client->connected()) {
       if( m_log != NULL) {
         m_log->print( __FILE__, __LINE__, 0x0200, "TelnetServer_client_disconnected:");
       }

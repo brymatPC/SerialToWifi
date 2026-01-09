@@ -1,4 +1,6 @@
 
+dictClear
+
 : ps? s' PARAMETER STACK: ' .str psd? 0!= [ psd? { dup ps@ . 1 - dup 0== } drop ] cr
 : rs? s'    RETURN STACK: ' .str rsd? 0!= [ rsd? 1 - { dup rs@ . 1 - dup -1 == } drop ] cr
 : cs? s'   COMPILE STACK: ' .str csd? 0!= [ csd? 1 - { dup cs@ . 1 - dup -1 == } drop ] cr
@@ -9,19 +11,19 @@
 : _cxb dup 0xFF & _cxc 8 >> _cxc 1 +
 : _cxa dup getCurrentDictionary _cxb
 : _cx0 _cxa _cxa _cxa _cxa _cxa _cxa _cxa _cxa _cxa _cxa _cxa _cxa _cxa _cxa _cxa _cxa drop
-: _cd1 _cd0 s' compiledDictionaryData[] = {\r ' .str
-: _cx1 _cd0 s' compiledExtensionDictionaryData[] = {\r ' .str
+: _cd1 _cd0 s' compiledDictionaryData[] = {\r' .str
+: _cx1 _cd0 s' compiledExtensionDictionaryData[] = {\r' .str
 : _cd2 dup 0x10 - 0xF & 0== [ s' // ' .str dup 0x10 - dup .wx space _cx0 cr ]
 : _cd3 0 { dup getCurrentDictionary .wx s' , ' .str 1 + _cd2 dup getCurrentDictionaryEnd >= } drop
-: _cd4 getCurrentDictionaryEnd 0!= [ _cd3 crlf ] s' };\r ' .str
+: _cd4 getCurrentDictionaryEnd 0!= [ _cd3 crlf ] s' };\r' .str
 : _cd5 s' static const CompiledDictionary ' .str
 : _cx5 s' static CompiledDictionary ' .str
 
 : _cd6 s' interpreterCompiledDictionary( compiledDictionaryData, ' .str
 : _cx6 s' compiledExtensionDictionary( compiledExtensionDictionaryData, ' .str
 : _cd7 getCurrentDictionaryLastWord .wx s' , ' .str getCurrentDictionaryEnd .wx
-: _cd8 _cd1 _cd4 _cd5 _cd6 _cd7  s' , YRSHELL_DICTIONARY_INTERPRETER_COMPILED);\r ' .str
-: _cx8 _cx1 _cd4 _cx5 _cx6 _cd7 s' , YRSHELL_DICTIONARY_EXTENSION_COMPILED);\r ' .str
+: _cd8 _cd1 _cd4 _cd5 _cd6 _cd7  s' , YRSHELL_DICTIONARY_INTERPRETER_COMPILED);\r' .str
+: _cx8 _cx1 _cd4 _cx5 _cx6 _cd7 s' , YRSHELL_DICTIONARY_EXTENSION_COMPILED);\r' .str
 : compileInterpreterDictionary _cd8
 : compileExtensionDictionary _cx8
 
@@ -54,10 +56,10 @@
 : _inf _inf0 _inf1 _inf2 _inf3 _inf4 _inf5 _inf6 _inf7 _inf8 _inf9 _infa _infb _infc
 : info cr printShellClass 4 spaces printMainFileName cr cr _inf
 
-: _ts0 s'       COUNT ' .str
-: _ts1 s'          MIN ' .str
-: _ts2 s'         MAX ' .str
-: _ts3 s'       AVERAGE ' .str
+: _ts0 s'       COUNT' .str
+: _ts1 s'          MIN' .str
+: _ts2 s'         MAX' .str
+: _ts3 s'       AVERAGE' .str
 : _ts4 _ts0 _ts1 _ts2 _ts3 cr cr
 : _ts5 dup sliceStats dup >r [ . . . . ] r> dup [ over printSliceName ] cr
 : runStats _ts4 0 { _ts5 [ 1 + 0 ][ -1 ] } drop
@@ -87,11 +89,11 @@
 // dcwa ( token_addr token -- token_addr t/f )
 : dcwa dup v_string != [ -1 ][ drop 1 + dup s'  s\' ' .str .rawStr 0x27 emit dup strlen 2 / + 0 ]
 // dcw8 ( token_addr token -- token_addr t/f )
-: dcw8 dup v_else != [ dup v_then != [ dcwa ][ drop s'  ] ' .str 0 ] ][ drop 1 + s'  ][ ' .str 0 ]
+: dcw8 dup v_else != [ dup v_then != [ dcwa ][ drop s'  ]' .str 0 ] ][ drop 1 + s'  ][' .str 0 ]
 // dcw6 ( token_addr token -- token_addr t/f )
-: dcw6 dup v_until != [ dup v_if != [ dcw8 ][ drop 1 + s'  [ ' .str 0 ] ][ drop 1 + s'  } ' .str 0 ]
+: dcw6 dup v_until != [ dup v_if != [ dcw8 ][ drop 1 + s'  [' .str 0 ] ][ drop 1 + s'  }' .str 0 ]
 // dcw4 ( token_addr token -- token_addr t/f )
-: dcw4 dup v_nint16 != [ dup v_begin != [ dcw6 ][ drop s'  { ' .str 0 ] ][ drop 1 + dup fetchToken 0xFFFF0000 + space .n 0 ]
+: dcw4 dup v_nint16 != [ dup v_begin != [ dcw6 ][ drop s'  {' .str 0 ] ][ drop 1 + dup fetchToken 0xFFFF0000 + space .n 0 ]
 // dcw3 ( token_addr token -- token_addr t/f )
 : dcw3 dup v_uint32 != [ dcw4 ][ drop 1 + dup fetchToken swap 1 + tuck fetchToken 16 << + space .n 0 ]
 // dcw1 ( token_addr token -- token_addr t/f )
@@ -107,7 +109,7 @@
 // duw2 ( token_addr+256 token_addr -- token_addr+256 token_addr t/f )
 : duw2 dup fetchToken dup .wx v_return == >r 1 + 2dup <= r> |
 // duw1 ( token_addr+256 token_addr -- token_addr+256 token_addr t/f )
-: duw1 dup isFunction [ s' iFUNCTION ' .str ][ { duw2 } ]
+: duw1 dup isFunction [ s' iFUNCTION' .str ][ { duw2 } ]
 // duw ( string -- )
 : duw find dup 0xFFFF != [ dup .wx s' : ' .str dup 0x100 + swap duw1 2drop ][ drop ] cr
 
